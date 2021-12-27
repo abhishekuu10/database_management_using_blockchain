@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>DBMS</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+
+        <h1>Database Management System Using Blockchain</h1>
+
+        <h2>Student</h2>
+
+       <label for="name" >Student Name</label> 
+       <input type="string" id="name">
+
+       <label for="rollno" >Student RollNo</label> 
+       <input type="string" id="rollno">
+
+       <label for="result" >Student result</label> 
+       <input type="string" id="result">
+
+       <button id="button">Add Student</button>
+
+
+
+    </div>
+
+    <div>
+        <div id="query">
+            
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+
+                
+     let intial= async ()=> {
+       
+        try {
+            window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+        catch(err) {
+            window.alert('couldn"t connect')
+        }
+        };
+     intial() ;
+
+
+
+         web3.eth.getAccounts().then(console.log);
+
+         web3.eth.getBlockNumber(function (error, result) {
+
+            console.log(result)
+
+        })
+
+        var myContract = new web3.eth.Contract([
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "__rollNo",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "__result",
+				"type": "string"
+			}
+		],
+		"name": "addStudent",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "arr",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "rollNo",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "result",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "exist",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct result.Student[]",
+				"name": "ans",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "counter",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "database",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "rollNo",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "result",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "exist",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_rollNo",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_result",
+				"type": "string"
+			}
+		],
+		"name": "queryStudent",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "rollNo",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "result",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct result.StudentOut[]",
+				"name": "matches",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stNames",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stResult",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stRollNo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalStudents",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+
+	, "0x38742041ED4B22380E4708B1Bb1AC380ceEb0Db2");
+    
+       console.log(myContract.methods);
+       web3.eth.defaultAccount = '0x0dfa303B0EFDcc16A7187AcfC96f12FD03813452';
+
+
+       $("#button").click(()=>{
+
+           
+        myContract.methods
+        .addStudent($("#name").val(), $("#rollno").val(), $("#result").val())
+        .send(
+            {from:' 0x78cD1d857868CD37ba6A4Fa2cAb825C2E7663719',
+            gas:3000000 }
+
+        ) ;
+
+    //     var query= [] ;
+    //    query =  myContract.methods
+    //     .queryStudent($("#name").val(), $("#rollno").val(), $("#result").val())
+    //     .call() ;
+
+    //     console.log(query.length) ;
+
+    //     var content = "<table>" ;
+
+    //      for(i=0;i<query.length;i++){
+    //          content+= "<tr><td>" + query[0] + "</td></tr>"
+    //      }   
+    //      content+= "</table"
+
+    //      $("#query").append(content) ;
+
+
+
+
+           
+       })
+
+     
+
+
+        
+    </script>
+
+</body>
+</html>
