@@ -1,0 +1,337 @@
+pragma solidity 0.5.8; //new
+pragma experimental ABIEncoderV2;
+
+
+contract result{
+    
+address owner ;
+
+modifier onlyOwner(){
+     require(msg.sender == owner);
+     _;
+ }
+ 
+ constructor () public {
+     owner=msg.sender ;
+ }
+    uint256 public totalStudents=0;
+    
+     struct StudentOut {
+
+      string  name ;
+      uint256 rollNo;
+      uint256 result ;
+    }
+
+    struct Student {
+      string  name ;
+      uint256 rollNo;
+      uint256 sem1 ;
+      uint256 sem2 ;
+      uint256 result ; 
+      uint256 dob ;
+      bool exist ;  
+    }
+
+    struct boolStruct {
+        bool name;
+        bool rollNo;
+        bool result ;
+    }
+
+
+
+
+mapping(string=>uint256[]) public stNames ; //key = name 
+mapping(bytes32=>uint256[]) public stRollNo ;  // key = roll no
+mapping(bytes32=>uint256[]) public stResult ; 
+ 
+
+mapping(uint256=>Student) public database ; 
+
+mapping(bytes32=>uint256 ) indexKepper ;
+
+uint256 public counter=1 ;
+
+ uint256 index ;
+
+function addStudent (
+    string memory __name,
+    string memory  __rollNo,
+    string memory  __result ,
+    string memory __sem1 ,
+    string memory __sem2 ,
+    string memory __dob 
+    ) onlyOwner public {
+    
+   
+
+    bytes32 _rollNo= toBytes32( __rollNo);
+    bytes32 _result= toBytes32(__result);
+ 
+    
+
+    index= indexKepper[_rollNo];
+
+
+    if(database[index].exist == false){
+         indexKepper[ _rollNo]=counter;
+         index=counter;
+         database[index].name=__name ;
+         database[index].rollNo=toInt(__rollNo) ;
+         database[index].result= toInt(__result );
+         database[index].sem1= toInt(__sem1);
+         database[index].sem2= toInt(__sem2);
+         database[index].dob= toInt(__dob);
+
+         database[index].exist=true ;
+
+         stNames[__name].push(index) ;
+         stRollNo[ _rollNo].push(index);
+         stResult[_result].push(index) ;
+        
+         counter++;
+         
+         totalStudents++;
+    }  
+    else{     
+            database[index].result= toInt(__result) ;   
+            database[index].name= __name ;       
+            
+            stNames[__name].push(index) ;
+            stResult[_result].push(index) ;
+    }
+    
+}
+
+
+
+function queryStudent(
+    string memory _name,
+    string memory  _rollNo,
+    string memory  _result 
+    
+    )  public view returns (StudentOut[] memory ) {
+        uint numFields ;
+        boolStruct memory starInfo;
+        StudentOut[] memory empty;
+        uint[] memory nameSearch;
+        uint[] memory rollNoSearch;
+        uint[] memory resultSearch;
+
+        uint[] memory indexSearch = new uint[](counter);
+
+        if(counter==1){
+            return empty ;
+        }
+
+        if(compareStrings(_name,"*")==false){
+            nameSearch = stNames[ _name];
+            numFields++;
+            starInfo.name = true;
+        }
+
+         if(compareStrings(_rollNo,"*")==false){
+            rollNoSearch = stRollNo[toBytes32( _rollNo)];
+            numFields++;
+            starInfo.rollNo = true;
+        }
+
+         if(compareStrings(_result,"*")==false){
+            resultSearch = stResult[toBytes32(_result)];
+            numFields++;
+            starInfo.result = true;
+        }
+
+        
+
+           uint matchCount=0; // num entries in the database that matched the query
+    
+
+    if ((compareStrings(_name, "*") == true) && 
+            ( (compareStrings(_rollNo, "*") == true) && 
+            ((compareStrings(_result ,"*") == true)))
+            ) {
+
+            for (uint i = 1; i < counter; i++) {
+                indexSearch[matchCount] = i;
+                matchCount++;
+            }
+    
+    }else {
+            uint min = counter;
+            uint which_one = 3;
+
+            if (nameSearch.length <= min && nameSearch.length != 0){
+                min = nameSearch.length;
+                which_one = 0;
+            }
+
+             if (rollNoSearch.length <= min && rollNoSearch.length != 0){
+                min = rollNoSearch.length;
+                which_one = 1;
+            }
+           
+            if (resultSearch.length <= min && resultSearch.length != 0){
+                min = resultSearch.length;
+                which_one = 2;
+            }
+
+
+            for (uint i; i < min; i++) {
+                uint found = 1;
+                //if shortest array is namesearch
+                if (which_one == 0) {
+                    if (starInfo.rollNo == true) {
+                        for (uint j; j < rollNoSearch.length; j++){
+                            if (nameSearch[i] == rollNoSearch[j]){
+                                found++;
+                                break;
+                            }
+                        }
+                    }
+                    if (starInfo.result == true) {
+                        for (uint j; j < resultSearch.length; j++){
+                            if (nameSearch[i] == resultSearch[j]){
+                                found++;
+                                break;
+                            }
+                        }
+                    }
+                    if (found == numFields){
+                        indexSearch[matchCount] = nameSearch[i];
+                        matchCount++;
+                    }
+                }
+                
+                //if shortest array is rollNoSearch
+                 if (which_one == 1) {
+                    if (starInfo.name == true) {
+                        for (uint j; j < nameSearch.length; j++){
+                            if (rollNoSearch[i] == nameSearch[j]){
+                                found++;
+                                break;
+                            }
+                        }
+                    }
+                    if (starInfo.result == true) {
+                        for (uint j; j < resultSearch.length; j++){
+                            if (rollNoSearch[i] == resultSearch[j]){
+                                found++;
+                                break;
+                            }
+                        }
+                    }
+                    if (found == numFields){
+                        indexSearch[matchCount] = rollNoSearch[i];
+                        matchCount++;
+                    }
+                }
+
+
+                //if shortest array is resultSearch
+                 if (which_one == 2) {
+                    if (starInfo.name == true) {
+                        for (uint j; j < nameSearch.length; j++){
+                            if (resultSearch[i] == nameSearch[j]){
+                                found++;
+                                break;
+                            }
+                        }
+                    }
+                    if (starInfo.rollNo == true) {
+                        for (uint j; j < rollNoSearch.length; j++){
+                            if (resultSearch[i] == rollNoSearch[j]){
+                                found++;
+                                break;
+                            }
+                        }
+                    }
+                    if (found == numFields){
+                        indexSearch[matchCount] = resultSearch[i];
+                        matchCount++;
+                    }
+                }               
+            } 
+       }
+          // trim arrays to increase looping efficiency        
+         uint[] memory trimIndexSearch = new uint[](matchCount);
+        for (uint i; i < matchCount; i++) {
+            trimIndexSearch[i] = indexSearch[i];
+        }
+
+
+
+        // build final struct from search results
+        StudentOut[] memory  matches = new StudentOut[](matchCount); // final struct array
+
+    
+
+        for (uint i; i < trimIndexSearch.length; i++) {
+            Student memory toAdd = database[trimIndexSearch[i]];
+            matches[i].name= toAdd.name ;
+            matches[i].rollNo= toAdd.rollNo ;
+            matches[i].result= toAdd.result ;
+        }
+
+         return matches ;
+
+   }
+       
+
+  
+
+//  functions required to implement the code
+
+function compareStrings (
+        string memory a, 
+        string memory b
+        ) internal pure returns (bool){ 
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b)))); 
+    }
+
+
+    function toBytes32(string memory source) internal pure returns (bytes32 result) {
+    bytes memory tempEmptyStringTest = bytes(source);
+    if (tempEmptyStringTest.length == 0) {
+        return 0x0;
+    }
+
+    assembly {
+        result := mload(add(source, 32))
+    }
+    return result ;
+}
+
+
+
+        function toStringSimple(uint _base) internal  pure returns (string memory) {
+        bytes memory _tmp = new bytes(32);
+        uint i;
+        for(i; _base > 0; i++) {
+            _tmp[i] = bytes1(uint8((_base % 10) + 48));
+            _base /= 10;
+        }
+        bytes memory _real = new bytes(i--);
+        for(uint j; j < _real.length; j++) {
+            _real[j] = _tmp[i--];
+        }
+        return string(_real);
+    }
+
+    
+
+
+ function toInt(string memory _value) internal pure returns (uint _ret) {
+        bytes memory _bytesValue = bytes(_value);
+        uint j = 1;
+        for(uint i = _bytesValue.length-1; i >= 0 && i < _bytesValue.length; i--) {
+            assert(uint8(_bytesValue[i]) >= 48 && uint8(_bytesValue[i]) <= 57);
+            _ret += (uint8(_bytesValue[i]) - 48)*j;
+            j*=10;
+        }
+        return _ret ;
+    }
+   
+ }  
+ 
